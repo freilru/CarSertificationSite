@@ -1,0 +1,47 @@
+{% extends 'main/base.html' %}
+{% block title %}главная{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <div class="app-content">
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="page-description">
+                            <h1>DataMinds</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Создание нового проекта</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post">
+                                    {% csrf_token %}
+                                    {% for field in form %}
+                                        <div class="mb-3">
+                                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                            {{ field }}
+                                            {% if field.errors %}
+                                                <div class="invalid-feedback">
+                                                    {{ field.errors|join:", " }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    <button type="submit" class="btn btn-primary">Создать проект</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

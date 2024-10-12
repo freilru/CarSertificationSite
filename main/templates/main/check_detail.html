@@ -1,0 +1,57 @@
+{% extends 'main/base.html' %}
+{% block title %}Детали проверки{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <div class="app-content">
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="page-description">
+                            <h1>Детали проверки требования</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">{{ requirement.title }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Описание:</strong> {{ requirement.description }}</p>
+                                <p><strong>Характеристики:</strong> {{ requirement.characteristics }}</p>
+                                <h6 class="mt-4">История проверок:</h6>
+                                <ul class="list-group">
+                                    <div class="example-container">
+                                        <div class="example-content bg-light">
+                                            {% for check in checks %}
+                                                <div class="alert alert-custom" role="alert">
+                                                    <div class="alert-content">
+                                                        <span class="alert-title">Статус: <span class="badge {% if check.is_passed %}bg-success{% else %}bg-danger{% endif %}">{% if check.is_passed %}Зачтено{% else %}Не зачтено{% endif %}</span></span>
+                                                        <span class="alert-text">Комментарий: {{ check.comment }}</span>
+                                                        <span class="alert-text">Выжимка: {{ check.summary_sert }}</span>
+                                                        <a href="{% url 'delete_check' requirement.project.id requirement.id check.id %}" class="btn btn-danger btn-sm float-end">Удалить</a>
+                                                    </div>
+                                                </div>
+                                                
+                                            {% empty %}
+                                                <div class="alert alert-custom" role="alert">
+                                                    <div class="alert-content">
+                                                        <span class="alert-text">Нет записей о проверках</span>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    
+                                    </div>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

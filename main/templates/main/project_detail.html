@@ -1,0 +1,204 @@
+{% extends 'main/base.html' %}
+{% block title %}главная{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <div class="app-content">
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="page-description">
+                            <h1>{{ project.title }}</h1>
+                            <span>{{ project.description }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Статистика требований</h5>
+                            </div>
+                            <div class="card-body" style="position: relative;">
+                                <div id="statch" style="min-height: 365px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-6">
+                        <div class="accordion" id="requirementsAccordion">
+                            {% for category, category_name in requirement_categories %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading{{ category }}">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapse{{ category }}" aria-expanded="true"
+                                                aria-controls="collapse{{ category }}">
+                                            {{ category_name }}
+                                        </button>
+                                    </h2>
+                                    <div id="collapse{{ category }}" class="accordion-collapse collapse "
+                                         aria-labelledby="heading{{ category }}"
+                                         data-bs-parent="#requirementsAccordion">
+                                        <div class="accordion-body">
+                                            <ul class="list-group">
+                                                {% for requirement in requirements %}
+                                                    {% if requirement.category == category %}
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <h5>{{ requirement.title }}</h5>
+                                                                <p>{{ requirement.description }}</p>
+                                                            </div>
+                                                            <div>
+                                                                <a class="btn btn-outline-warning btn-sm me-2"
+                                                                        href="{% url 'delete_requirement' project.id requirement.id %}">
+                                                                    Удалить
+                                                            </a>
+                                                                <a class="btn btn-{% if requirement.checks.exists and requirement.checks.first.is_passed %}success{% else %}danger{% endif %} btn-sm btn-style-light"
+                                                                        href="{% url 'check_detail' project.id requirement.id %}">
+                                                                    Посмотреть отчет
+                                                        </a>
+                                                            </div>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-xl-6">
+                        <div class="card widget widget-info">
+                            <div class="card-body">
+                                <div class="widget-info-container">
+                                    <div class="widget-info-image"
+                                         style="background: url('{% static 'assets/images/widgets/security.svg' %}')"></div>
+                                    <h5 class="widget-info-title">Добавить новое требование</h5>
+                                    <p class="widget-info-text">Нажмите кнопку ниже, чтобы добавить новое требование к
+                                        проекту.</p>
+                                    <a href="{% url 'create_requirement' project.id %}"
+                                       class="btn btn-primary widget-info-action">Добавить требование</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Модальное окно для отчета по сертификации -->
+                <div class="modal fade" id="certificationReportModal" tabindex="-1"
+                     aria-labelledby="certificationReportModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="certificationReportModalLabel">Отчет по сертификации</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body" id="certificationReportContent">
+                                <!-- Здесь будет отображаться содержимое отчета -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    function deleteRequirement(requirementId) {
+                        // Реализация удаления требования
+                        console.log('Удаление требования с ID:', requirementId);
+                    }
+
+                    function showCertificationReport(requirementId) {
+                        // Загрузка и отображение отчета по сертификации
+                        fetch(`/api/requirement/${requirementId}/checks/`)
+                            .then(response => response.json())
+                            .then(data => {
+                                let content = '<ul class="list-group">';
+                                data.forEach(check => {
+                                    content += `
+                                        <li class="list-group-item">
+                                            <h6>Выжимка: ${check.summary_sert}</h6>
+                                            <p>Статус: ${check.is_passed ? 'Зачтено' : 'Не зачтено'}</p>
+                                            <p>Комментарий: ${check.comment}</p>
+                                        </li>
+                                    `;
+                                });
+                                content += '</ul>';
+                                document.getElementById('certificationReportContent').innerHTML = content;
+                                new bootstrap.Modal(document.getElementById('certificationReportModal')).show();
+                            });
+                    }
+                </script>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'assets/plugins/apexcharts/apexcharts.min.js' %}"></script>
+    <script src="{% static 'assets/js/pages/charts-apex.js' %}"></script>
+    <script>
+        var options7 = {
+            series: [{
+                name: 'Зачтено',
+                data: {{ passed_counts }},
+            }, {
+                name: 'Не зачтено',
+                data: {{ failed_counts }},
+            }],
+            chart: {
+                height: 350,
+                type: 'radar',
+            },
+            dataLabels: {
+                enabled: true
+            },
+            plotOptions: {
+                radar: {
+                    size: 140,
+                    polygons: {
+                        strokeColors: '#e9e9e9',
+                        fill: {
+                            colors: ['#f8f8f8', '#fff']
+                        }
+                    }
+                }
+            },
+
+            colors: ['#FF4560', '#00E396'],
+            markers: {
+                size: 4,
+                colors: ['#fff'],
+                strokeColor: '#FF4560',
+                strokeWidth: 2,
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val
+                    }
+                }
+            },
+            xaxis: {
+                categories: ['Колесная база', 'Двигатель', 'Трансмиссия', 'Тормоза', 'Подвеска', 'Стекла', 'Топливная система', 'Световая система', 'Выхлопная система', 'Система безопасности']
+            },
+            yaxis: {
+                tickAmount: 5,
+                min: 0,
+                max: 4,
+                labels: {
+                    formatter: function (val) {
+                        return Math.round(val);
+                    }
+                }
+            }
+        };
+
+        var chart7 = new ApexCharts(document.querySelector("#statch"), options7);
+        chart7.render();
+    </script>
+{% endblock %}

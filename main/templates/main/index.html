@@ -1,0 +1,148 @@
+{% extends 'main/base.html' %}
+{% block title %}главная{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <div class="app-content">
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="page-description">
+                            <h1>DataMinds</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-6">
+                        <div class="card widget widget-list">
+                            <div class="card-header">
+                                <h5 class="card-title">Проекты<span class="badge badge-danger badge-style-light">СЕРТИФИКАЦИЯ</span>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <a href="{% url 'create_project' %}" class="btn btn-light btn-rounded w-100 mb-2" >Создать новый
+                                </a>
+                                <ul class="widget-list-content list-unstyled">
+                                    {% for project in projects %}
+                                    <li class="widget-list-item">
+                                                <span class="widget-list-item-icon widget-list-item-icon-large">
+                                                    <div class="widget-list-item-icon-image"
+                                                         style="background: url('{% static 'assets/images/widgets/widget.png' %}')"></div>
+                                                </span>
+                                        <span class="widget-list-item-description">
+                                                    <a href="{% url 'project_detail' project.id %}" class="widget-list-item-description-title">
+                                                        {{ project.title }}
+                                                    </a>
+                                                    <span class="widget-list-item-description-date">
+                                                        {{ project.description }}
+                                                    </span>
+                                                </span>
+                                        <span class="widget-list-item-product-amount">
+                                                    <a href="{% url 'project_detail' project.id %}" class="btn btn-light btn-rounded">Перейти</a>
+                                                </span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6">
+
+                        <div class="card widget widget-list">
+                            <div class="card-header">
+                                <h5 class="card-title">Регламенты<span
+                                        class="badge badge-success badge-style-light">СЕРТИФИКАЦИЯ</span></h5>
+                            </div>
+                            <div class="card-body">
+                                <span class="text-muted m-b-xs d-block">маленькое описание сертификатов</span>
+                                <ul class="widget-list-content list-unstyled">
+                                    <li class="widget-list-item widget-list-item-green">
+                                        <span class="widget-list-item-icon"><i
+                                                class="material-icons-outlined">article</i></span>
+                                        <span class="widget-list-item-description">
+                                                    <a href="#" class="widget-list-item-description-title">
+                                                        Комфорт автомобиля
+                                                    </a>
+                                                    <span class="widget-list-item-description-progress">
+                                                        <div class="progress">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                 style="width: 45%;" aria-valuenow="45"
+                                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </span>
+                                                </span>
+                                    </li>
+                                    <li class="widget-list-item widget-list-item-blue">
+                                        <span class="widget-list-item-icon"><i class="material-icons-outlined">verified_user</i></span>
+                                        <span class="widget-list-item-description">
+                                                    <a href="#" class="widget-list-item-description-title">
+                                                        Система безопасности
+                                                    </a>
+                                                    <span class="widget-list-item-description-progress">
+                                                        <div class="progress">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                 style="width: 57%;" aria-valuenow="57"
+                                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </span>
+                                                </span>
+                                    </li>
+                                    <li class="widget-list-item widget-list-item-purple">
+                                        <span class="widget-list-item-icon"><i class="material-icons-outlined">watch_later</i></span>
+                                        <span class="widget-list-item-description">
+                                                    <a href="#" class="widget-list-item-description-title">
+                                                        Срок службы
+                                                    </a>
+                                                    <span class="widget-list-item-description-progress">
+                                                        <div class="progress">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                 style="width: 14%;" aria-valuenow="14"
+                                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </span>
+                                                </span>
+                                    </li>
+                                    <li class="widget-list-item widget-list-item-yellow">
+                                        <span class="widget-list-item-icon"><i
+                                                class="material-icons-outlined">extension</i></span>
+                                        <span class="widget-list-item-description">
+                                                    <a href="#" class="widget-list-item-description-title">
+                                                        Ремонтопригодность
+                                                    </a>
+                                                    <span class="widget-list-item-description-progress">
+                                                        <div class="progress">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                 style="width: 79%;" aria-valuenow="79"
+                                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </span>
+                                                </span>
+                                    </li>
+                                    <li class="widget-list-item widget-list-item-red">
+                                        <span class="widget-list-item-icon"><i class="material-icons-outlined">invert_colors</i></span>
+                                        <span class="widget-list-item-description">
+                                                    <a href="#" class="widget-list-item-description-title">
+                                                        Экология
+                                                    </a>
+                                                    <span class="widget-list-item-description-progress">
+                                                        <div class="progress">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                 style="width: 25%;" aria-valuenow="25"
+                                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                    </span>
+                                                </span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
