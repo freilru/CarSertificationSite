@@ -1,0 +1,52 @@
+{% extends 'main/base.html' %}
+{% block title %}Загрузка PDF{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <link href="{% static 'assets/plugins/dropzone/min/dropzone.min.css' %}" rel="stylesheet">
+    <div class="app-content">
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="page-description">
+                            <h1>Загрузка PDF файла</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div id="dropzone">
+                                    <form action="{% url 'upload_pdf' %}" class="dropzone needsclick dz-clickable" id="demo-upload">
+                                        {% csrf_token %}
+                                        <div class="dz-message needsclick">
+                                            <button type="button" class="dz-button">Перетащите файлы сюда или нажмите для загрузки.</button><br>
+                                            <span class="note needsclick">(Только PDF файлы)</span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'assets/plugins/dropzone/min/dropzone.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/highlight/highlight.pack.js' %}"></script>
+    <script>
+        Dropzone.options.myDropzone = {
+            acceptedFiles: ".pdf",
+            init: function() {
+                this.on("success", function(file, response) {
+                    console.log("Файл успешно загружен:", file.name);
+                });
+            }
+        };
+    </script>
+{% endblock %}

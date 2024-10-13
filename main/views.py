@@ -113,3 +113,27 @@ def delete_requirement(request, project_id, requirement_id):
     requirement = get_object_or_404(Requirement, id=requirement_id, project_id=project_id)
     requirement.delete()
     return redirect('project_detail', project_id=project_id)
+
+def upload_pdf(request):
+    if request.method == 'POST':
+        if 'file' in request.FILES:
+            pdf_file = request.FILES['file']
+            if pdf_file.name.endswith('.pdf'):
+                import os
+                from django.conf import settings
+
+                pdf_folder = os.path.join(settings.BASE_DIR, 'pdf')
+                if not os.path.exists(pdf_folder):
+                    os.makedirs(pdf_folder)
+
+                file_path = os.path.join(pdf_folder, pdf_file.name)
+                with open(file_path, 'wb+') as destination:
+                    for chunk in pdf_file.chunks():
+                        destination.write(chunk)
+                
+                return JsonResponse({'message': 'PDF успешно сохранен'}, status=200)
+            else:
+                return JsonResponse({'error': 'Файл должен быть в формате PDF'}, status=400)
+        else:
+            return JsonResponse({'error': 'Файл не найден'}, status=400)
+    return render(request, 'main/upload_pdf.html')

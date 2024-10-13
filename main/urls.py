@@ -12,4 +12,5 @@ urlpatterns = [
     path('project/<int:project_id>/requirement/<int:requirement_id>/check', views.check_detail, name='check_detail'),
     path('project/<int:project_id>/requirement/<int:requirement_id>/check/delete/<int:check_id>', views.delete_check,
          name='delete_check'),
+    path('upload_pdf', views.upload_pdf, name='upload_pdf'),
 ]
