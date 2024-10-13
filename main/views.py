@@ -9,15 +9,16 @@ from django.conf import settings
 import urllib.request
 import urllib.parse
 
-from .api import get_check
+from .api import get_check, process_large_query
 from .forms import ProjectForm, RequirementForm
-from .models import Project, Requirement, RequirementCheck
+from .models import Project, Requirement, RequirementCheck, StoredFile
 
 
 # Представление для главной страницы
 def index(request):
     projects = Project.objects.all()
-    return render(request, 'main/index.html', {'projects': projects})
+    stored_files = StoredFile.objects.all()
+    return render(request, 'main/index.html', {'projects': projects, 'stored_files': stored_files})
 
 
 def create_project(request):
@@ -84,11 +85,12 @@ def create_requirement(request, project_id):
             requirement.save()
             check_res = get_check(requirement.category, requirement.title, requirement.description,
                                   requirement.characteristics)
+            print(check_res)
             RequirementCheck.objects.create(
                 requirement=requirement,
-                summary_sert=check_res['summary'],
-                is_passed=check_res['is_done'],
-                comment=check_res['comment']
+                summary_sert=check_res[0]['summary'],
+                is_passed=check_res[0]['is_done'],
+                comment=check_res[0]['comment']
             )
             
             return redirect('project_detail', project_id=project_id)
@@ -131,9 +133,37 @@ def upload_pdf(request):
                     for chunk in pdf_file.chunks():
                         destination.write(chunk)
                 
+                StoredFile.objects.update_or_create(
+                    title=pdf_file.name,
+                    defaults={'title': pdf_file.name}
+                )
                 return JsonResponse({'message': 'PDF успешно сохранен'}, status=200)
             else:
                 return JsonResponse({'error': 'Файл должен быть в формате PDF'}, status=400)
         else:
             return JsonResponse({'error': 'Файл не найден'}, status=400)
     return render(request, 'main/upload_pdf.html')
+
+def create_report(request):
+    if request.method == 'POST':
+        file_ids = request.POST.getlist('file_ids')
+        print(file_ids)
+        res = process_large_query(file_ids)
+        print(res)
+    
+    reports = [
+        {
+            'summary': 'Регламент описывает требования к системе Acoustic Vehicle Alerting System (AVAS), которая должна издавать предупреждающие звуки для пешеходов при движении электромобиля на низкой скорости.',
+            'is_done': False,
+            'comment': 'Предоставленный "Use Case" описывает сценарии использования системы предупреждения пешеходов, но не содержит технических требований, соответствующих регламенту AVAS. Необходимо добавить следующие пункты:\n\n*   **Характеристики звука:**  Описать частоту, громкость и другие параметры звука, издаваемого системой, в соответствии с требованиями регламента.\n*   **Активация системы:**  Указать, при каких условиях (скорость, режим движения) активируется система и как она взаимодействует с другими системами автомобиля (например, тормозной системой).\n*   **Тестирование и валидация:**  Описать процедуры тестирования системы на соответствие требованиям регламента AVAS.',
+            'categories': 'Pedestrian Warning System'
+        },
+        {
+            'summary': 'Регламент описывает требования к системе звукового оповещения пешеходов (AVAS), которая должна издавать звук при движении транспортного средства задним ходом на низкой скорости для предупреждения пешеходов.',
+            'is_done': True,
+            'comment': '',
+            'categories': 'система звукового оповещения пешеходов (AVAS)'
+        }
+    ]
+    
+    return render(request, 'main/create_report.html', {'reports': reports})

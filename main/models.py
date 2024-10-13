@@ -42,3 +42,10 @@ class RequirementCheck(models.Model):
 
     def __str__(self):
         return f'Проверка для {self.requirement.title} - {"Зачтено" if self.is_passed else "Не зачтено"}'
+
+class StoredFile(models.Model):
+    title = models.CharField(max_length=255, verbose_name='Название файла')
+
+    def __str__(self):
+        return self.title
+

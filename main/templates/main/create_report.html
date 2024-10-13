@@ -1,0 +1,50 @@
+{% extends 'main/base.html' %}
+{% block title %}Создание отчета{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <div class="app-content">
+        <div class="content-wrapper">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="page-description">
+                            <h1>Создание отчета</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">Отчеты</h5>
+                            </div>
+                            <div class="card-body">
+                                {% for report in reports %}
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ report.categories }}</h5>
+                                            <p class="card-text"><strong>Краткое содержание:</strong> {{ report.summary }}</p>
+                                            <p class="card-text"><strong>Статус:</strong> 
+                                                <span class="badge {% if report.is_done %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {% if report.is_done %}Выполнено{% else %}Не выполнено{% endif %}
+                                                </span>
+                                            </p>
+                                            {% if report.comment %}
+                                                <p class="card-text"><strong>Комментарий:</strong> {{ report.comment }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <div class="alert alert-info" role="alert">
+                                        Отчеты отсутствуют.
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
