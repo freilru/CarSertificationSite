@@ -144,11 +144,11 @@
     <script>
         var options7 = {
             series: [{
-                name: 'Зачтено',
-                data: {{ passed_counts }},
-            }, {
                 name: 'Не зачтено',
                 data: {{ failed_counts }},
+            }, {
+                name: 'Зачтено',
+                data: {{ passed_counts }},
             }],
             chart: {
                 height: 350,

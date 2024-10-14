@@ -1,26 +1,33 @@
 # Импорт необходимых модулей
 import json
+import time
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.conf import settings
 import urllib.request
 import urllib.parse
+import io
 
-from .api import get_check, process_large_query
+from django.views.decorators.csrf import csrf_exempt
+
+from .api import get_check, process_large_query, create_pdf
 from .forms import ProjectForm, RequirementForm
 from .models import Project, Requirement, RequirementCheck, StoredFile
 
 
 # Представление для главной страницы
+@csrf_exempt
 def index(request):
     projects = Project.objects.all()
     stored_files = StoredFile.objects.all()
     return render(request, 'main/index.html', {'projects': projects, 'stored_files': stored_files})
 
 
+@csrf_exempt
 def create_project(request):
     if request.method == 'POST':
         form = ProjectForm(request.POST)
@@ -32,6 +39,7 @@ def create_project(request):
     return render(request, 'main/create_project.html', {'form': form})
 
 
+@csrf_exempt
 def project_detail(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     requirements = Requirement.objects.filter(project=project)
@@ -75,6 +83,7 @@ def project_detail(request, project_id):
     return render(request, 'main/project_detail.html', context)
 
 
+@csrf_exempt
 def create_requirement(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     if request.method == 'POST':
@@ -92,30 +101,35 @@ def create_requirement(request, project_id):
                 is_passed=check_res[0]['is_done'],
                 comment=check_res[0]['comment']
             )
-            
+
             return redirect('project_detail', project_id=project_id)
     else:
         form = RequirementForm()
     return render(request, 'main/create_requirement.html', {'form': form, 'project': project})
 
 
+@csrf_exempt
 def check_detail(request, project_id, requirement_id):
     requirement = get_object_or_404(Requirement, id=requirement_id, project_id=project_id)
     checks = RequirementCheck.objects.filter(requirement=requirement)
     return render(request, 'main/check_detail.html', {'requirement': requirement, 'checks': checks})
 
 
+@csrf_exempt
 def delete_check(request, project_id, requirement_id, check_id):
     check = get_object_or_404(RequirementCheck, id=check_id, requirement_id=requirement_id)
     check.delete()
     return redirect('project_detail', project_id=project_id)
 
 
+@csrf_exempt
 def delete_requirement(request, project_id, requirement_id):
     requirement = get_object_or_404(Requirement, id=requirement_id, project_id=project_id)
     requirement.delete()
     return redirect('project_detail', project_id=project_id)
 
+
+@csrf_exempt
 def upload_pdf(request):
     if request.method == 'POST':
         if 'file' in request.FILES:
@@ -132,7 +146,7 @@ def upload_pdf(request):
                 with open(file_path, 'wb+') as destination:
                     for chunk in pdf_file.chunks():
                         destination.write(chunk)
-                
+
                 StoredFile.objects.update_or_create(
                     title=pdf_file.name,
                     defaults={'title': pdf_file.name}
@@ -144,26 +158,35 @@ def upload_pdf(request):
             return JsonResponse({'error': 'Файл не найден'}, status=400)
     return render(request, 'main/upload_pdf.html')
 
+
+@csrf_exempt
 def create_report(request):
     if request.method == 'POST':
         file_ids = request.POST.getlist('file_ids')
         print(file_ids)
         res = process_large_query(file_ids)
         print(res)
-    
-    reports = [
-        {
-            'summary': 'Регламент описывает требования к системе Acoustic Vehicle Alerting System (AVAS), которая должна издавать предупреждающие звуки для пешеходов при движении электромобиля на низкой скорости.',
-            'is_done': False,
-            'comment': 'Предоставленный "Use Case" описывает сценарии использования системы предупреждения пешеходов, но не содержит технических требований, соответствующих регламенту AVAS. Необходимо добавить следующие пункты:\n\n*   **Характеристики звука:**  Описать частоту, громкость и другие параметры звука, издаваемого системой, в соответствии с требованиями регламента.\n*   **Активация системы:**  Указать, при каких условиях (скорость, режим движения) активируется система и как она взаимодействует с другими системами автомобиля (например, тормозной системой).\n*   **Тестирование и валидация:**  Описать процедуры тестирования системы на соответствие требованиям регламента AVAS.',
-            'categories': 'Pedestrian Warning System'
-        },
-        {
-            'summary': 'Регламент описывает требования к системе звукового оповещения пешеходов (AVAS), которая должна издавать звук при движении транспортного средства задним ходом на низкой скорости для предупреждения пешеходов.',
-            'is_done': True,
-            'comment': '',
-            'categories': 'система звукового оповещения пешеходов (AVAS)'
-        }
-    ]
-    
-    return render(request, 'main/create_report.html', {'reports': reports})
+
+        # Создаем PDF-файл
+        import os
+        from django.conf import settings
+        from .api import create_pdf
+
+        # Создаем директорию для отчетов, если она не существует
+        reports_dir = os.path.join(settings.MEDIA_ROOT, 'reports')
+        os.makedirs(reports_dir, exist_ok=True)
+
+        # Генерируем уникальное имя файла
+        pdf_filename = f'report_{request.user.id}_{int(time.time())}.pdf'
+        pdf_path = os.path.join(reports_dir, pdf_filename)
+
+        # Создаем PDF-файл
+        create_pdf(res, pdf_path)
+
+        # Формируем URL для скачивания PDF
+        pdf_url = settings.MEDIA_URL + f'reports/{pdf_filename}'
+        print(pdf_url)
+
+        return render(request, 'main/create_report.html', {'reports': res, 'pdf_url': pdf_url})
+
+    return render(request, 'main/create_report.html')

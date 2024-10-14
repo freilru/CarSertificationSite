@@ -64,12 +64,14 @@
                                                 <option value="pdf/{{ file.title }}">{{ file.title }}</option>
                                             {% endfor %}
                                         </select>
-                                        <button type="submit" class="btn btn-outline-primary widget-info-action">Создать
+                                        <a href="{% url 'upload_pdf' %}" class="btn btn-outline-primary widget-info-action">Загрузить
+                                            pdf
+                                        </a>
+                                        <button type="submit" class="btn btn-primary widget-info-action float-end">Создать
                                             отчет
                                         </button>
                                     </form>
-                                    <div class="widget-info-image"
-                                         style="background: url('{% static 'assets/images/widgets/speed.svg' %}')"></div>
+
                                 </div>
                             </div>
                         </div>
